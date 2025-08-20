@@ -49,7 +49,7 @@ export default function AdminPage() {
         const agents = agentsData.agents || [];
         agentStats = {
           totalAgents: agents.length,
-          activeAgents: agents.filter((agent: any) => agent.is_active).length
+          activeAgents: agents.filter((agent: { is_active: boolean }) => agent.is_active).length
         };
       }
 
