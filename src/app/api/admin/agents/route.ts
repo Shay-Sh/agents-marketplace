@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Include all essential agent fields
     const agentData = {
       name: data.name,
       description: data.description,
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       pricing_tier: data.pricing_tier,
       context_type: data.context_type,
       system_prompt: data.system_prompt,
-      // Note: icon column doesn't exist in actual database, storing in metadata or handling separately
+      icon: data.icon || 'Bot',
       webhook_url: data.webhook_url || null,
       keywords: Array.isArray(data.keywords) ? data.keywords : [],
       created_by: adminUserId,
@@ -81,11 +82,11 @@ export async function POST(request: NextRequest) {
       keywordsCount: agentData.keywords.length
     });
 
-    // Simplified insert without complex select operations
+    // Insert agent with all fields
     const { data: agent, error } = await supabase
       .from('agents')
       .insert(agentData)
-      .select('id, name, description, category, pricing_tier, is_active')
+      .select('id, name, description, category, pricing_tier, is_active, icon, webhook_url, keywords')
       .single();
 
     if (error) {

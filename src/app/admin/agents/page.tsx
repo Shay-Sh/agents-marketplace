@@ -31,6 +31,7 @@ interface Agent {
   category: string;
   pricing_tier: string;
   is_active: boolean;
+  icon: string;
   webhook_url: string | null;
   keywords: string[];
   created_at: string;
