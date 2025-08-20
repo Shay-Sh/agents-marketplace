@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       pricing_tier: data.pricing_tier,
       context_type: data.context_type,
       system_prompt: data.system_prompt,
-      icon: data.icon || 'Bot',
+      // Note: icon column doesn't exist in actual database, storing in metadata or handling separately
       webhook_url: data.webhook_url || null,
       keywords: Array.isArray(data.keywords) ? data.keywords : [],
       created_by: adminUserId,
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     const { data: agent, error } = await supabase
       .from('agents')
       .insert(agentData)
-      .select('id, name, description, category, pricing_tier, is_active, icon')
+      .select('id, name, description, category, pricing_tier, is_active')
       .single();
 
     if (error) {

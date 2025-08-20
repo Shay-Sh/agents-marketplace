@@ -20,6 +20,8 @@ export type Database = {
           context_type: 'user_provided' | 'predefined' | 'hybrid'
           system_prompt: string
           knowledge_base_ids: string[] | null
+          webhook_url: string | null
+          keywords: string[] | null
           created_by: string
           created_at: string
           updated_at: string
@@ -34,6 +36,8 @@ export type Database = {
           context_type: 'user_provided' | 'predefined' | 'hybrid'
           system_prompt: string
           knowledge_base_ids?: string[] | null
+          webhook_url?: string | null
+          keywords?: string[] | null
           created_by: string
           created_at?: string
           updated_at?: string
@@ -48,6 +52,8 @@ export type Database = {
           context_type?: 'user_provided' | 'predefined' | 'hybrid'
           system_prompt?: string
           knowledge_base_ids?: string[] | null
+          webhook_url?: string | null
+          keywords?: string[] | null
           created_by?: string
           created_at?: string
           updated_at?: string
