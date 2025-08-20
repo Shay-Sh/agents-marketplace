@@ -90,27 +90,38 @@ export default function NewAgentPage() {
     e.preventDefault();
     setLoading(true);
     
+    console.log('🚀 Submitting agent form:', formData);
+    
     try {
+      const submitData = {
+        ...formData,
+        keywords: formData.keywords.split(',').map(k => k.trim()).filter(Boolean),
+      };
+      
+      console.log('📤 Sending data to API:', submitData);
+      
       const response = await fetch('/api/admin/agents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          keywords: formData.keywords.split(',').map(k => k.trim()).filter(Boolean),
-        }),
+        body: JSON.stringify(submitData),
       });
       
+      const responseData = await response.json();
+      console.log('📥 API Response:', responseData);
+      
       if (response.ok) {
-        // Redirect to agents list or show success
+        console.log('✅ Agent created successfully');
         window.location.href = '/admin/agents';
       } else {
-        alert('Failed to create agent');
+        const errorMessage = responseData.details || responseData.error || 'Failed to create agent';
+        console.error('❌ API Error:', errorMessage);
+        alert(`Failed to create agent: ${errorMessage}`);
       }
     } catch (error) {
-      console.error('Error creating agent:', error);
-      alert('Error creating agent');
+      console.error('💥 Network/Parse error:', error);
+      alert(`Error creating agent: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
