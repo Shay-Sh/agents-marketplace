@@ -51,7 +51,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-xl font-semibold">Our Values</h3>
               <p className="text-muted-foreground">
-                Innovation, transparency, security, and putting our customers' success at the center of everything we do.
+                Innovation, transparency, security, and putting our customers&apos; success at the center of everything we do.
               </p>
             </CardContent>
           </Card>

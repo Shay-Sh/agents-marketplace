@@ -94,7 +94,7 @@ export default function DocsPage() {
         <div className="text-center space-y-6 p-8 bg-muted rounded-lg">
           <h3 className="text-2xl font-semibold">Need Help?</h3>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Can't find what you're looking for? Our support team is here to help you succeed.
+            Can&apos;t find what you&apos;re looking for? Our support team is here to help you succeed.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild>
