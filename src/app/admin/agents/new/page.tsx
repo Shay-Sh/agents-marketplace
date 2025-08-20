@@ -21,9 +21,55 @@ import {
   Save,
   Eye,
   Type,
-  Palette
+  Palette,
+  MessageSquare, 
+  Brain, 
+  Zap, 
+  Search,
+  Filter,
+  Star,
+  Heart,
+  Shield,
+  Settings,
+  User,
+  Users,
+  Mail,
+  Phone,
+  Target,
+  TrendingUp,
+  BarChart,
+  PieChart,
+  Database,
+  Server,
+  Code,
+  Terminal,
+  Cpu,
+  Headphones,
+  Mic,
+  Volume2,
+  File,
+  FileText,
+  Image,
+  Folder,
+  Archive,
+  Award,
+  ShoppingCart,
+  CreditCard,
+  DollarSign,
+  Grid,
+  Layout,
+  Menu
 } from "lucide-react";
 import Link from "next/link";
+
+// Icon mapping
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Bot, MessageSquare, Brain, Zap, Search, Filter, Star, Heart, Shield, Settings,
+  User, Users, Mail, Phone, Target, TrendingUp, BarChart, PieChart, Database,
+  Server, Code, Terminal, Cpu, Headphones, Mic, Volume2, File, FileText,
+  Image, Folder, Archive, Award, ShoppingCart, CreditCard, DollarSign,
+  Grid, Layout, Menu
+};
 
 export default function NewAgentPage() {
   const [formData, setFormData] = useState({
@@ -73,6 +119,9 @@ export default function NewAgentPage() {
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // Get the selected icon component
+  const SelectedIcon = iconMap[formData.icon] || Bot;
 
   return (
     <div className="space-y-6">
@@ -265,7 +314,7 @@ export default function NewAgentPage() {
                 <div className="border border-gray-700 rounded-lg p-4 space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-gray-800 rounded-lg">
-                      <Bot className="h-5 w-5 text-white" />
+                      <SelectedIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-white">{formData.name || 'Agent Name'}</h3>
