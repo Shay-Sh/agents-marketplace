@@ -6,8 +6,33 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     const data = await request.json();
 
-    // For now, create a mock admin user ID - in production you'd verify admin auth
-    const adminUserId = '00000000-0000-0000-0000-000000000000';
+    // Get or create admin user
+    let adminUserId: string;
+    
+    // Check if admin user exists
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('id')
+      .limit(1)
+      .single();
+      
+    if (existingUser) {
+      adminUserId = existingUser.id;
+    } else {
+      // Create a system admin user if none exists
+      adminUserId = '00000000-0000-0000-0000-000000000000';
+      
+      // Try to insert the system admin user
+      await supabase
+        .from('profiles')
+        .upsert([{
+          id: adminUserId,
+          full_name: 'System Admin',
+          subscription_tier: 'enterprise'
+        }])
+        .select()
+        .single();
+    }
 
     const agentData = {
       name: data.name,

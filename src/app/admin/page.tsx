@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -11,13 +14,62 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+interface Stats {
+  totalAgents: number;
+  activeAgents: number;
+  totalUsers: number;
+  totalConversations: number;
+}
+
 export default function AdminPage() {
-  // Mock stats - replace with real data
-  const stats = {
-    totalAgents: 12,
-    totalUsers: 847,
-    totalConversations: 2341,
-    monthlyRevenue: 12450
+  const [stats, setStats] = useState<Stats>({
+    totalAgents: 0,
+    activeAgents: 0,
+    totalUsers: 0,
+    totalConversations: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const [agentsResponse, profilesResponse] = await Promise.all([
+        fetch('/api/admin/agents'),
+        fetch('/api/admin/stats')
+      ]);
+
+      let agentStats = { totalAgents: 0, activeAgents: 0 };
+      let userStats = { totalUsers: 0, totalConversations: 0 };
+
+      if (agentsResponse.ok) {
+        const agentsData = await agentsResponse.json();
+        const agents = agentsData.agents || [];
+        agentStats = {
+          totalAgents: agents.length,
+          activeAgents: agents.filter((agent: any) => agent.is_active).length
+        };
+      }
+
+      if (profilesResponse.ok) {
+        const profilesData = await profilesResponse.json();
+        userStats = {
+          totalUsers: profilesData.totalUsers || 0,
+          totalConversations: profilesData.totalConversations || 0
+        };
+      }
+
+      setStats({
+        ...agentStats,
+        ...userStats
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,9 +108,11 @@ export default function AdminPage() {
             <Bot className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.totalAgents}</div>
+            <div className="text-2xl font-bold text-white">
+              {loading ? '...' : stats.totalAgents}
+            </div>
             <p className="text-xs text-gray-400">
-              +2 from last month
+              {loading ? '...' : `${stats.activeAgents} active`}
             </p>
           </CardContent>
         </Card>
@@ -66,14 +120,16 @@ export default function AdminPage() {
         <Card className="bg-gray-900 border-gray-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-300">
-              Active Users
+              Total Users
             </CardTitle>
             <Users className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.totalUsers}</div>
+            <div className="text-2xl font-bold text-white">
+              {loading ? '...' : stats.totalUsers}
+            </div>
             <p className="text-xs text-gray-400">
-              +12% from last month
+              Registered users
             </p>
           </CardContent>
         </Card>
@@ -86,9 +142,11 @@ export default function AdminPage() {
             <MessageSquare className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.totalConversations.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-white">
+              {loading ? '...' : stats.totalConversations.toLocaleString()}
+            </div>
             <p className="text-xs text-gray-400">
-              +8% from last month
+              Total conversations
             </p>
           </CardContent>
         </Card>
@@ -96,14 +154,14 @@ export default function AdminPage() {
         <Card className="bg-gray-900 border-gray-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-300">
-              Monthly Revenue
+              System Status
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">${stats.monthlyRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-400">Online</div>
             <p className="text-xs text-gray-400">
-              +15% from last month
+              All systems operational
             </p>
           </CardContent>
         </Card>
