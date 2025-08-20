@@ -20,11 +20,7 @@ import {
   ArrowLeft,
   Save,
   Eye,
-  DollarSign,
-  Tag,
-  Webhook,
   Type,
-  FileText,
   Palette
 } from "lucide-react";
 import Link from "next/link";
