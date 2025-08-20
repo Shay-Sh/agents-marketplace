@@ -71,36 +71,35 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="container py-8">
-      <div className="flex flex-col gap-8">
-        {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Welcome back, {user.user_metadata?.full_name || user.email}!
-            </h1>
-            <p className="text-muted-foreground">
-              Manage your AI agents and track your usage
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button asChild>
-              <Link href="/marketplace">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Agent
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/dashboard/settings">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Link>
-            </Button>
-          </div>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Welcome back, {user.user_metadata?.full_name || user.email?.split('@')[0]}!
+          </h1>
+          <p className="text-muted-foreground">
+            Manage your AI agents and track your usage from your dashboard
+          </p>
         </div>
+        <div className="flex gap-2">
+          <Button asChild>
+            <Link href="/dashboard/agents/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Agent
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/settings">
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </Link>
+          </Button>
+        </div>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Cards */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -164,8 +163,8 @@ export default async function DashboardPage() {
           </Card>
         </div>
 
-        {/* Your Agents */}
-        <div className="space-y-4">
+      {/* Your Agents */}
+      <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold tracking-tight">Your Agents</h2>
             <Button variant="outline" asChild>
@@ -205,8 +204,8 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <Card>
+      {/* Recent Activity */}
+      <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
@@ -246,7 +245,6 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   )
 }
