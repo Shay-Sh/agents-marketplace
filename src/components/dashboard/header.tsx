@@ -71,7 +71,7 @@ export function DashboardHeader() {
 
   if (loading) {
     return (
-      <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6">
+      <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6">
         <div className="flex items-center space-x-4">
           <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
         </div>
@@ -81,7 +81,7 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6">
+    <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6">
       {/* Search and Actions */}
       <div className="flex items-center space-x-4 flex-1">
         <div className="relative max-w-md w-full">
@@ -89,7 +89,7 @@ export function DashboardHeader() {
           <Input
             type="text"
             placeholder="Search agents, conversations..."
-            className="pl-10 bg-gray-50 dark:bg-gray-700 border-0"
+            className="pl-10 bg-gray-50 dark:bg-gray-800 border-0"
           />
         </div>
         

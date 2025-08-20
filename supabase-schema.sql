@@ -29,6 +29,9 @@ create table public.agents (
   context_type context_type not null,
   system_prompt text not null,
   knowledge_base_ids uuid[] default '{}',
+  icon text default 'Bot',
+  webhook_url text,
+  keywords text[] default '{}',
   created_by uuid references auth.users(id) on delete cascade not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null

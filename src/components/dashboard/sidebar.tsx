@@ -62,12 +62,12 @@ export function DashboardSidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+    <div className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
       {/* Logo */}
-      <div className="flex items-center px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center px-6 py-4 border-b border-gray-200 dark:border-gray-800">
         <Link href="/dashboard" className="flex items-center space-x-2">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Zap className="h-5 w-5 text-primary" />
+          <div className="p-2 bg-gray-900 dark:bg-gray-100 rounded-lg">
+            <Zap className="h-5 w-5 text-white dark:text-gray-900" />
           </div>
           <div>
             <h2 className="text-lg font-bold">Lab17 Agents</h2>
@@ -89,8 +89,8 @@ export function DashboardSidebar() {
               className={cn(
                 "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                 isActive
-                  ? "bg-primary/10 text-primary border-r-2 border-primary"
-                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                  ? "bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 border-r-2 border-gray-900 dark:border-gray-100"
+                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
               )}
             >
               <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
@@ -101,8 +101,8 @@ export function DashboardSidebar() {
       </nav>
 
       {/* Bottom section */}
-      <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-4 text-white">
+      <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-4 text-white">
           <h3 className="font-semibold text-sm">Upgrade to Pro</h3>
           <p className="text-xs opacity-90 mt-1">Unlock advanced features</p>
           <Link 
