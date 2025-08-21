@@ -1,9 +1,55 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Users, Bot } from "lucide-react";
+import { Bot, Loader2 } from "lucide-react";
+
+interface Agent {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  pricing_tier: string;
+  is_active: boolean;
+  icon: string;
+  created_at: string;
+}
 
 export default function MarketplacePage() {
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAgents();
+  }, []);
+
+  const fetchAgents = async () => {
+    try {
+      const response = await fetch('/api/admin/agents');
+      if (response.ok) {
+        const data = await response.json();
+        // Only show active agents in marketplace
+        setAgents((data.agents || []).filter((agent: Agent) => agent.is_active));
+      }
+    } catch (error) {
+      console.error('Error fetching agents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPricingColor = (tier: string) => {
+    switch (tier) {
+      case 'free': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+      case 'basic': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'premium': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      case 'enterprise': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+    }
+  };
+
   return (
     <div className="container py-8">
       <div className="space-y-8">
@@ -14,71 +60,55 @@ export default function MarketplacePage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              name: "Customer Support AI",
-              description: "24/7 intelligent customer service automation with natural language understanding",
-              category: "Customer Service",
-              rating: 4.9,
-              users: "10k+",
-              pricing: "basic"
-            },
-            {
-              name: "Content Generator",
-              description: "AI-powered content creation and optimization for marketing and social media",
-              category: "Marketing",
-              rating: 4.8,
-              users: "5k+",
-              pricing: "premium"
-            },
-            {
-              name: "Data Analyst",
-              description: "Automated data analysis and insights generation with visualization capabilities",
-              category: "Analytics",
-              rating: 4.9,
-              users: "3k+",
-              pricing: "enterprise"
-            }
-          ].map((agent, index) => (
-            <Card key={index} className="transition-all hover:shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline">{agent.category}</Badge>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{agent.rating}</span>
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {agents.map((agent) => (
+              <Card key={agent.id} className="transition-all hover:shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline">{agent.category}</Badge>
+                    <Badge 
+                      variant="outline"
+                      className={getPricingColor(agent.pricing_tier)}
+                    >
+                      {agent.pricing_tier}
+                    </Badge>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-blue-600" />
-                  <CardTitle className="text-lg">{agent.name}</CardTitle>
-                </div>
-                <CardDescription>{agent.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    {agent.users} users
+                  <div className="flex items-center gap-2">
+                    <Bot className="h-5 w-5 text-blue-600" />
+                    <CardTitle className="text-lg">{agent.name}</CardTitle>
                   </div>
-                  <Button size="sm">
-                    Subscribe
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <CardDescription>{agent.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">
+                      Created {new Date(agent.created_at).toLocaleDateString()}
+                    </div>
+                    <Button size="sm">
+                      Subscribe
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">
-            More agents coming soon! Sign up to get notified when new agents are available.
-          </p>
-          <Button variant="outline">
-            Get Notified
-          </Button>
-        </div>
+        {/* Empty State */}
+        {!loading && agents.length === 0 && (
+          <div className="text-center py-12">
+            <Bot className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-semibold text-gray-900">No agents available</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Check back later for new AI agents in the marketplace.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
