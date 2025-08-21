@@ -57,7 +57,7 @@ export default function ConversationsPage() {
         <div className="flex gap-2">
           <NewChatDialog />
           <Button variant="outline" asChild>
-            <Link href="/marketplace">
+            <Link href="/dashboard/marketplace">
               Browse Agents
             </Link>
           </Button>
@@ -95,7 +95,7 @@ export default function ConversationsPage() {
                     <span>Created {new Date(conversation.created_at).toLocaleDateString()}</span>
                   </div>
                   <Button size="sm" className="w-full" asChild>
-                    <Link href={`/agents/${conversation.agents.id}?conversation=${conversation.id}`}>
+                    <Link href={`/dashboard/chat/${conversation.id}`}>
                       <MessageSquare className="mr-2 h-4 w-4" />
                       Continue Chat
                     </Link>
@@ -123,7 +123,7 @@ export default function ConversationsPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <NewChatDialog />
               <Button variant="outline" asChild>
-                <Link href="/marketplace">
+                <Link href="/dashboard/marketplace">
                   Browse Agents
                 </Link>
               </Button>

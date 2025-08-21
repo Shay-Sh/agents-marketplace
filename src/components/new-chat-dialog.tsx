@@ -61,7 +61,7 @@ export function NewChatDialog() {
       if (response.ok) {
         const data = await response.json();
         setOpen(false);
-        router.push(`/agents/${selectedAgentId}?conversation=${data.conversation.id}`);
+        router.push(`/dashboard/chat/${data.conversation.id}`);
       } else {
         const error = await response.json();
         console.error('Failed to create conversation:', error.error);

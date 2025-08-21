@@ -10,9 +10,9 @@ import {
   BarChart3,
   Settings,
   CreditCard,
-  Users,
   BookOpen,
-  Zap
+  Zap,
+  Search
 } from "lucide-react";
 
 const navigation = [
@@ -20,6 +20,11 @@ const navigation = [
     name: "Overview",
     href: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    name: "Browse & Discover",
+    href: "/dashboard/marketplace",
+    icon: Search,
   },
   {
     name: "My Agents", 
@@ -35,11 +40,6 @@ const navigation = [
     name: "Analytics",
     href: "/dashboard/analytics",
     icon: BarChart3,
-  },
-  {
-    name: "Team",
-    href: "/dashboard/team",
-    icon: Users,
   },
   {
     name: "Knowledge Base",

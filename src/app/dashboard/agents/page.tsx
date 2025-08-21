@@ -67,7 +67,7 @@ export default function AgentsPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="/marketplace">
+          <Link href="/dashboard/marketplace">
             <ShoppingCart className="mr-2 h-4 w-4" />
             Browse Marketplace
           </Link>
@@ -89,7 +89,7 @@ export default function AgentsPage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild>
-                <Link href="/marketplace">
+                <Link href="/dashboard/marketplace">
                   <ShoppingCart className="mr-2 h-4 w-4" />
                   Browse Marketplace
                 </Link>
@@ -156,10 +156,11 @@ export default function AgentsPage() {
                       size="sm"
                       className="flex-1"
                     />
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/agents/${subscription.agent_id}`}>
-                        Details
-                      </Link>
+                    <Button variant="outline" size="sm" onClick={() => {
+                      // TODO: Show agent details in a modal within dashboard
+                      console.log('View details for agent:', subscription.agent_id);
+                    }}>
+                      Details
                     </Button>
                   </div>
                 </div>

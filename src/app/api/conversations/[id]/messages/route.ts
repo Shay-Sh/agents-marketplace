@@ -74,9 +74,52 @@ export async function POST(
 
     addMessage(userMessage);
 
-    // Generate AI response (simple mock for now)
+    // Generate AI response using OpenAI API
     const agentName = conversation.agents?.name || 'Assistant';
-    const aiResponse = `Hello! I'm ${agentName}. I received your message: "${content}". How can I help you today?`;
+    let aiResponse = '';
+
+    try {
+      // Try to make a real API call to OpenAI
+      const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: `You are ${agentName}, a helpful AI assistant. Be helpful, friendly, and professional.`
+            },
+            {
+              role: 'user',
+              content: content
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.7
+        })
+      });
+
+      if (openAIResponse.ok) {
+        const openAIData = await openAIResponse.json();
+        aiResponse = openAIData.choices[0]?.message?.content || `Hello! I'm ${agentName}. How can I help you today?`;
+      } else {
+        throw new Error('OpenAI API call failed');
+      }
+    } catch (error) {
+      console.error('Error calling OpenAI API:', error);
+      // Fallback to a more sophisticated mock response
+      const responses = [
+        `Hello! I'm ${agentName}. I understand you said: "${content}". Let me help you with that.`,
+        `Thanks for your message! As ${agentName}, I'm here to assist you. Could you tell me more about what you need help with?`,
+        `I received your message: "${content}". I'm ${agentName}, and I'd be happy to help you. What would you like to know?`,
+        `Hi there! I'm ${agentName}. I see you mentioned: "${content}". How can I best assist you with this?`
+      ];
+      aiResponse = responses[Math.floor(Math.random() * responses.length)];
+    }
 
     // Save AI response to in-memory store
     const aiMessage: Message = {

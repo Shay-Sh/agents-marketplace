@@ -32,17 +32,17 @@ export function ChatStarter({ agentId, agentName, variant = 'default', size = 'd
 
       if (response.ok) {
         const data = await response.json();
-        router.push(`/agents/${agentId}?conversation=${data.conversation.id}`);
+        router.push(`/dashboard/chat/${data.conversation.id}`);
       } else {
         const error = await response.json();
         console.error('Failed to create conversation:', error.error);
-        // For now, just navigate to agent page
-        router.push(`/agents/${agentId}`);
+        // Fallback to conversations page
+        router.push(`/dashboard/conversations`);
       }
     } catch (error) {
       console.error('Error creating conversation:', error);
-      // Fallback to agent page
-      router.push(`/agents/${agentId}`);
+      // Fallback to conversations page
+      router.push(`/dashboard/conversations`);
     } finally {
       setIsCreating(false);
     }

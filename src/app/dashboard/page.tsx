@@ -233,10 +233,11 @@ export default function DashboardPage() {
                           size="sm"
                           className="flex-1"
                         />
-                        <Button size="sm" variant="outline" asChild>
-                          <Link href={`/agents/${subscription.agent_id}`}>
-                            Details
-                          </Link>
+                        <Button size="sm" variant="outline" onClick={() => {
+                          // TODO: Show agent details in a modal within dashboard
+                          console.log('View details for agent:', subscription.agent_id);
+                        }}>
+                          Details
                         </Button>
                       </div>
                     </div>
@@ -257,7 +258,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <Button asChild>
-                  <Link href="/marketplace">
+                  <Link href="/dashboard/marketplace">
                     <ShoppingCart className="mr-2 h-4 w-4" />
                     Browse Marketplace
                   </Link>
