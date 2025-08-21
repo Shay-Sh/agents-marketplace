@@ -90,11 +90,18 @@ export default function MarketplacePage() {
                     <div className="text-sm text-muted-foreground">
                       Created {new Date(agent.created_at).toLocaleDateString()}
                     </div>
-                    <Button size="sm" asChild>
-                      <Link href={`/agents/${agent.id}`}>
-                        View Details
-                      </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/agents/${agent.id}`}>
+                          View Details
+                        </Link>
+                      </Button>
+                      <Button size="sm" asChild>
+                        <Link href={`/agents/${agent.id}?action=subscribe`}>
+                          Subscribe
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

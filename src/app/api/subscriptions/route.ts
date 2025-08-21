@@ -8,7 +8,7 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { agentId } = await request.json();
+    const { agentId, tier = 'basic' } = await request.json();
 
     if (!agentId) {
       return NextResponse.json(
@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
     // In production, this would come from authentication
     const userId = 'default-user-id';
 
-    // Check if user is subscribed to this agent
-    const { data: subscription } = await supabase
+    // Check if subscription already exists
+    const { data: existingSubscription } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('user_id', userId)
@@ -30,35 +30,39 @@ export async function POST(request: NextRequest) {
       .eq('status', 'active')
       .single();
 
-    if (!subscription) {
+    if (existingSubscription) {
       return NextResponse.json(
-        { error: 'You must subscribe to this agent before starting a conversation' },
-        { status: 403 }
+        { error: 'Already subscribed to this agent' },
+        { status: 400 }
       );
     }
 
-    // Create a new conversation
-    const { data: conversation, error } = await supabase
-      .from('conversations')
+    // Create new subscription
+    const { data: subscription, error } = await supabase
+      .from('subscriptions')
       .insert({
-        agent_id: agentId,
         user_id: userId,
-        title: `Chat with Agent`
+        agent_id: agentId,
+        tier: tier,
+        status: 'active'
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating conversation:', error);
+      console.error('Error creating subscription:', error);
       return NextResponse.json(
-        { error: 'Failed to create conversation' },
+        { error: 'Failed to create subscription' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ conversation });
+    return NextResponse.json({ 
+      subscription,
+      message: 'Successfully subscribed to agent'
+    });
   } catch (error) {
-    console.error('Error in conversation creation:', error);
+    console.error('Error in subscription creation:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -71,30 +75,36 @@ export async function GET() {
     // For now, we'll use a default user ID
     const userId = 'default-user-id';
 
-    const { data: conversations, error } = await supabase
-      .from('conversations')
+    const { data: subscriptions, error } = await supabase
+      .from('subscriptions')
       .select(`
         *,
         agents (
           id,
           name,
-          icon
+          description,
+          category,
+          pricing_tier,
+          icon,
+          keywords,
+          is_active
         )
       `)
       .eq('user_id', userId)
-      .order('updated_at', { ascending: false });
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching conversations:', error);
+      console.error('Error fetching subscriptions:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch conversations' },
+        { error: 'Failed to fetch subscriptions' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ conversations });
+    return NextResponse.json({ subscriptions });
   } catch (error) {
-    console.error('Error in conversations fetch:', error);
+    console.error('Error in subscriptions fetch:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

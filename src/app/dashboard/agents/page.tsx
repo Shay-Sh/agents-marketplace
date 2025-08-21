@@ -6,48 +6,54 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Bot, Loader2, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
-interface Agent {
+interface Subscription {
   id: string;
-  name: string;
-  description: string;
-  category: string;
-  pricing_tier: string;
-  is_active: boolean;
+  agent_id: string;
+  tier: string;
+  status: string;
   created_at: string;
+  agents: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    pricing_tier: string;
+    icon: string;
+    keywords: string[];
+    is_active: boolean;
+  };
 }
 
 export default function AgentsPage() {
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm] = useState('');
 
   useEffect(() => {
-    fetchAgents();
+    fetchSubscriptions();
   }, []);
 
-  const fetchAgents = async () => {
+  const fetchSubscriptions = async () => {
     try {
-      const response = await fetch('/api/admin/agents');
+      const response = await fetch('/api/subscriptions');
       if (response.ok) {
         const data = await response.json();
-        // For now, show all active agents (subscription system will filter this later)
-        setAgents((data.agents || []).filter((agent: Agent) => agent.is_active));
+        setSubscriptions(data.subscriptions || []);
       }
     } catch (error) {
-      console.error('Error fetching agents:', error);
+      console.error('Error fetching subscriptions:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredAgents = agents.filter(agent =>
-    agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agent.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agent.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSubscriptions = subscriptions.filter(subscription =>
+    subscription.agents.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    subscription.agents.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    subscription.agents.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Note: This will show subscribed agents once subscription system is implemented
-  const hasSubscriptions = false; // Will be true when user has subscribed agents
+  const hasSubscriptions = subscriptions.length > 0;
 
   return (
     <div className="space-y-6">
@@ -102,14 +108,66 @@ export default function AgentsPage() {
         </Card>
       )}
 
-      {/* Future: This will show subscribed agents */}
+      {/* Subscribed Agents Grid */}
       {hasSubscriptions && loading && (
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
         </div>
       )}
 
-      {hasSubscriptions && !loading && filteredAgents.length === 0 && (
+      {hasSubscriptions && !loading && (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredSubscriptions.map((subscription) => (
+            <Card key={subscription.id} className="transition-all hover:shadow-lg">
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Bot className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">{subscription.agents.name}</h3>
+                      <p className="text-sm text-muted-foreground">{subscription.agents.category}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                      {subscription.tier}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Active
+                    </span>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                  {subscription.agents.description}
+                </p>
+                
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-muted-foreground">
+                    Subscribed {new Date(subscription.created_at).toLocaleDateString()}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/agents/${subscription.agent_id}`}>
+                        View Details
+                      </Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <Link href={`/dashboard/conversations?agent=${subscription.agent_id}`}>
+                        Chat
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {hasSubscriptions && !loading && filteredSubscriptions.length === 0 && (
         <div className="text-center py-12">
           <Bot className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-semibold">No subscribed agents found</h3>

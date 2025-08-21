@@ -28,6 +28,7 @@ export default function AgentDetailPage() {
   const searchParams = useSearchParams();
   const agentId = params.id as string;
   const existingConversationId = searchParams.get('conversation');
+  const action = searchParams.get('action');
   
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,9 +51,16 @@ export default function AgentDetailPage() {
   };
 
   const checkSubscription = async () => {
-    // For now, simulate subscription check
-    // In production, this would check actual user subscriptions
-    setIsSubscribed(true);
+    try {
+      const response = await fetch(`/api/subscriptions/${agentId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setIsSubscribed(data.isSubscribed);
+      }
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+      setIsSubscribed(false);
+    }
   };
 
   useEffect(() => {
@@ -64,13 +72,39 @@ export default function AgentDetailPage() {
       setShowChat(true);
       setConversationId(existingConversationId);
     }
-  }, [agentId, existingConversationId]);
+    // Auto-trigger subscription if coming from marketplace
+    if (action === 'subscribe' && agent && !isSubscribed) {
+      handleSubscribe();
+    }
+  }, [agentId, existingConversationId, action, agent, isSubscribed]);
 
   const handleSubscribe = async () => {
-    // For now, just enable chat
-    // In production, this would handle actual subscription flow
-    setIsSubscribed(true);
-    setShowChat(true);
+    try {
+      const response = await fetch('/api/subscriptions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agentId: agentId,
+          tier: agent?.pricing_tier || 'basic'
+        }),
+      });
+
+      if (response.ok) {
+        setIsSubscribed(true);
+        // Show success message or redirect to dashboard
+      } else {
+        const error = await response.json();
+        console.error('Subscription failed:', error.error);
+        // Show error message to user
+        if (error.error.includes('Already subscribed')) {
+          setIsSubscribed(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error subscribing to agent:', error);
+    }
   };
 
   const handleStartChat = () => {

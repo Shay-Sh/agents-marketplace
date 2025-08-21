@@ -76,6 +76,26 @@ export async function POST(
       );
     }
 
+    // For now, we'll use a default user ID
+    // In production, this would come from authentication
+    const userId = 'default-user-id';
+
+    // Verify user has active subscription to this agent
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('agent_id', conversation.agent_id)
+      .eq('status', 'active')
+      .single();
+
+    if (!subscription) {
+      return NextResponse.json(
+        { error: 'Active subscription required to send messages' },
+        { status: 403 }
+      );
+    }
+
     // Save user message
     const { error: userMessageError } = await supabase
       .from('messages')
