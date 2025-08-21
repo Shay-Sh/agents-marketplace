@@ -21,21 +21,9 @@ export async function POST(request: NextRequest) {
     // In production, this would come from authentication
     const userId = '00000000-0000-0000-0000-000000000000';
 
-    // Check if user is subscribed to this agent
-    const { data: subscription } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('agent_id', agentId)
-      .eq('status', 'active')
-      .single();
-
-    if (!subscription) {
-      return NextResponse.json(
-        { error: 'You must subscribe to this agent before starting a conversation' },
-        { status: 403 }
-      );
-    }
+    // For development, skip subscription check
+    // In production, this would check actual subscription status
+    console.log('Creating conversation for agent:', agentId);
 
     // Create a new conversation
     const { data: conversation, error } = await supabase

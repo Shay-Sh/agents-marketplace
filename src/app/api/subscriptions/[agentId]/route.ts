@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+interface Subscription {
+  id: string;
+  user_id: string;
+  agent_id: string;
+  tier: string;
+  status: string;
+  created_at: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  agents: any;
+}
+
+// Import the same in-memory store (this is a simple approach for development)
+// In a real application, you'd use a proper shared state or database
+let subscriptionsStore: Subscription[] = [];
+
+// Simple way to share state between API routes (not ideal for production)
+if (typeof global !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (global as any).subscriptionsStore = (global as any).subscriptionsStore || [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  subscriptionsStore = (global as any).subscriptionsStore;
+}
 
 export async function GET(
   request: NextRequest,
@@ -13,25 +30,12 @@ export async function GET(
   try {
     const { agentId } = await params;
     
-    // For now, we'll use a default user ID (valid UUID format)
-    // In production, this would come from authentication
     const userId = '00000000-0000-0000-0000-000000000000';
 
-    const { data: subscription, error } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('agent_id', agentId)
-      .eq('status', 'active')
-      .single();
-
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-      console.error('Error checking subscription:', error);
-      return NextResponse.json(
-        { error: 'Failed to check subscription' },
-        { status: 500 }
-      );
-    }
+    // Check subscription in memory store
+    const subscription = subscriptionsStore.find(
+      sub => sub.user_id === userId && sub.agent_id === agentId && sub.status === 'active'
+    );
 
     return NextResponse.json({ 
       isSubscribed: !!subscription,
