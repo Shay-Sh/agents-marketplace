@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { addConversation, getUserConversations, findSubscription, type Conversation } from '@/lib/store';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,28 +16,34 @@ export async function POST(request: NextRequest) {
     // In production, this would come from authentication
     const userId = '00000000-0000-0000-0000-000000000000';
 
-    // For development, skip subscription check
-    // In production, this would check actual subscription status
-    console.log('Creating conversation for agent:', agentId);
-
-    // Create a new conversation
-    const { data: conversation, error } = await supabase
-      .from('conversations')
-      .insert({
-        agent_id: agentId,
-        user_id: userId,
-        title: `Chat with Agent`
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating conversation:', error);
+    // Check if user is subscribed to this agent
+    const subscription = findSubscription(userId, agentId);
+    if (!subscription) {
       return NextResponse.json(
-        { error: 'Failed to create conversation' },
-        { status: 500 }
+        { error: 'You must subscribe to this agent before starting a conversation' },
+        { status: 403 }
       );
     }
+
+    // Get agent name from subscription for conversation title
+    const agentName = subscription.agents?.name || 'Agent';
+
+    // Create a new conversation using in-memory store
+    const conversation: Conversation = {
+      id: `conv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      user_id: userId,
+      agent_id: agentId,
+      title: `Chat with ${agentName}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      agents: {
+        id: agentId,
+        name: agentName,
+        icon: subscription.agents?.icon || 'Bot'
+      }
+    };
+
+    addConversation(conversation);
 
     return NextResponse.json({ conversation });
   } catch (error) {
@@ -56,29 +57,13 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    // For now, we'll use a default user ID (valid UUID format)
     const userId = '00000000-0000-0000-0000-000000000000';
 
-    const { data: conversations, error } = await supabase
-      .from('conversations')
-      .select(`
-        *,
-        agents (
-          id,
-          name,
-          icon
-        )
-      `)
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false });
+    // Get user conversations from in-memory store
+    const conversations = getUserConversations(userId);
 
-    if (error) {
-      console.error('Error fetching conversations:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch conversations' },
-        { status: 500 }
-      );
-    }
+    // Sort by updated_at descending
+    conversations.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
     return NextResponse.json({ conversations });
   } catch (error) {

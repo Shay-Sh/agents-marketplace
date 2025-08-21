@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Bot, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { NewChatDialog } from "@/components/new-chat-dialog";
 
 interface Conversation {
   id: string;
@@ -53,12 +54,14 @@ export default function ConversationsPage() {
             {hasConversations ? 'View and manage all conversations with your AI agents' : 'Start chatting with AI agents to see conversations here'}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/marketplace">
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Browse Agents
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <NewChatDialog />
+          <Button variant="outline" asChild>
+            <Link href="/marketplace">
+              Browse Agents
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Loading State */}
@@ -118,15 +121,10 @@ export default function ConversationsPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild>
-                <Link href="/marketplace">
-                  <Bot className="mr-2 h-4 w-4" />
-                  Browse Agents
-                </Link>
-              </Button>
+              <NewChatDialog />
               <Button variant="outline" asChild>
-                <Link href="/dashboard/agents">
-                  View My Agents
+                <Link href="/marketplace">
+                  Browse Agents
                 </Link>
               </Button>
             </div>

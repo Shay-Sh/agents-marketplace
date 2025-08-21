@@ -15,6 +15,7 @@ import {
   Loader2
 } from 'lucide-react'
 import Link from 'next/link'
+import { ChatStarter } from '@/components/chat-starter'
 
 interface Subscription {
   id: string;
@@ -221,15 +222,23 @@ export default function DashboardPage() {
                     <CardDescription>{subscription.agents.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
+                    <div className="space-y-3">
+                      <div className="text-sm text-muted-foreground">
                         Subscribed: {new Date(subscription.created_at).toLocaleDateString()}
-                      </span>
-                      <Button size="sm" variant="outline" asChild>
-                        <Link href={`/agents/${subscription.agent_id}`}>
-                          Open Chat
-                        </Link>
-                      </Button>
+                      </div>
+                      <div className="flex gap-2">
+                        <ChatStarter 
+                          agentId={subscription.agent_id}
+                          agentName={subscription.agents.name}
+                          size="sm"
+                          className="flex-1"
+                        />
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/agents/${subscription.agent_id}`}>
+                            Details
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

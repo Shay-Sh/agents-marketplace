@@ -1,35 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-interface Subscription {
-  id: string;
-  user_id: string;
-  agent_id: string;
-  tier: string;
-  status: string;
-  created_at: string;
-  agents: {
-    id: string;
-    name: string;
-    description: string;
-    category: string;
-    pricing_tier: string;
-    icon: string;
-    keywords: string[];
-    is_active: boolean;
-  };
-}
-
-// Temporary in-memory storage for development
-// In production, this would be replaced with proper database storage
-let subscriptionsStore: Subscription[] = [];
-
-// Simple way to share state between API routes (not ideal for production)
-if (typeof global !== 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (global as any).subscriptionsStore = (global as any).subscriptionsStore || [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  subscriptionsStore = (global as any).subscriptionsStore;
-}
+import { findSubscription, addSubscription, getUserSubscriptions, type Subscription } from '@/lib/store';
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,10 +14,8 @@ export async function POST(request: NextRequest) {
 
     const userId = '00000000-0000-0000-0000-000000000000';
 
-    // Check if subscription already exists in memory store
-    const existingSubscription = subscriptionsStore.find(
-      sub => sub.user_id === userId && sub.agent_id === agentId && sub.status === 'active'
-    );
+    // Check if subscription already exists using shared store
+    const existingSubscription = findSubscription(userId, agentId);
 
     if (existingSubscription) {
       return NextResponse.json(
@@ -69,8 +37,8 @@ export async function POST(request: NextRequest) {
       console.error('Error fetching agent data:', error);
     }
 
-    // Create new subscription in memory store
-    const subscription = {
+    // Create new subscription using shared store
+    const subscription: Subscription = {
       id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       user_id: userId,
       agent_id: agentId,
@@ -89,7 +57,7 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    subscriptionsStore.push(subscription);
+    addSubscription(subscription);
 
     return NextResponse.json({ 
       subscription,
@@ -111,10 +79,8 @@ export async function GET() {
   try {
     const userId = '00000000-0000-0000-0000-000000000000';
 
-    // Filter subscriptions from memory store
-    const userSubscriptions = subscriptionsStore.filter(
-      sub => sub.user_id === userId && sub.status === 'active'
-    );
+    // Get user subscriptions from shared store
+    const userSubscriptions = getUserSubscriptions(userId);
 
     // Sort by created_at descending
     userSubscriptions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());

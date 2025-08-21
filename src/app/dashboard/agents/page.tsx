@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bot, Loader2, ShoppingCart } from "lucide-react";
 import Link from "next/link";
+import { ChatStarter } from "@/components/chat-starter";
 
 interface Subscription {
   id: string;
@@ -144,19 +145,20 @@ export default function AgentsPage() {
                   {subscription.agents.description}
                 </p>
                 
-                <div className="flex justify-between items-center">
+                <div className="space-y-3">
                   <p className="text-xs text-muted-foreground">
                     Subscribed {new Date(subscription.created_at).toLocaleDateString()}
                   </p>
                   <div className="flex gap-2">
+                    <ChatStarter 
+                      agentId={subscription.agent_id}
+                      agentName={subscription.agents.name}
+                      size="sm"
+                      className="flex-1"
+                    />
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/agents/${subscription.agent_id}`}>
-                        View Details
-                      </Link>
-                    </Button>
-                    <Button size="sm" asChild>
-                      <Link href={`/dashboard/conversations?agent=${subscription.agent_id}`}>
-                        Chat
+                        Details
                       </Link>
                     </Button>
                   </div>
