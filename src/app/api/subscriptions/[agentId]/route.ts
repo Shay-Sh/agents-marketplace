@@ -13,9 +13,9 @@ export async function GET(
   try {
     const { agentId } = await params;
     
-    // For now, we'll use a default user ID
+    // For now, we'll use a default user ID (valid UUID format)
     // In production, this would come from authentication
-    const userId = 'default-user-id';
+    const userId = '00000000-0000-0000-0000-000000000000';
 
     const { data: subscription, error } = await supabase
       .from('subscriptions')

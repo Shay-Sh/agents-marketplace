@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For now, we'll use a default user ID
+    // For now, we'll use a default user ID (valid UUID format)
     // In production, this would come from authentication
-    const userId = 'default-user-id';
+    const userId = '00000000-0000-0000-0000-000000000000';
 
     // Check if user is subscribed to this agent
     const { data: subscription } = await supabase
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    // For now, we'll use a default user ID
-    const userId = 'default-user-id';
+    // For now, we'll use a default user ID (valid UUID format)
+    const userId = '00000000-0000-0000-0000-000000000000';
 
     const { data: conversations, error } = await supabase
       .from('conversations')

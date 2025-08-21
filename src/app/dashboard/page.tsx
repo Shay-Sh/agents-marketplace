@@ -1,5 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,66 +10,93 @@ import {
   Settings, 
   TrendingUp, 
   CreditCard,
-  Plus
+  Plus,
+  ShoppingCart,
+  Loader2
 } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function DashboardPage() {
-  let user = null
+interface Subscription {
+  id: string;
+  agent_id: string;
+  tier: string;
+  status: string;
+  created_at: string;
+  agents: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    pricing_tier: string;
+    is_active: boolean;
+  };
+}
+
+interface Conversation {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  agents: {
+    id: string;
+    name: string;
+    icon: string;
+  };
+}
+
+export default function DashboardPage() {
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  try {
-    const supabase = await createClient()
-    const { data: { user: authUser }, error } = await supabase.auth.getUser()
-    
-    if (error || !authUser) {
-      redirect('/auth/login')
+  const user = {
+    id: '00000000-0000-0000-0000-000000000000',
+    email: 'demo@lab17.ai',
+    user_metadata: { full_name: 'Demo User' }
+  }
+  
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      // Fetch subscriptions and conversations in parallel
+      const [subscriptionsRes, conversationsRes] = await Promise.all([
+        fetch('/api/subscriptions'),
+        fetch('/api/conversations')
+      ]);
+      
+      if (subscriptionsRes.ok) {
+        const subscriptionsData = await subscriptionsRes.json();
+        setSubscriptions(subscriptionsData.subscriptions || []);
+      }
+      
+      if (conversationsRes.ok) {
+        const conversationsData = await conversationsRes.json();
+        setConversations(conversationsData.conversations || []);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
     }
-    
-    user = authUser
-  } catch {
-    // Handle case where Supabase is not properly configured
-    console.warn('Supabase not configured, using mock user for development')
-    user = {
-      id: 'mock-user-id',
-      email: 'demo@lab17.ai',
-      user_metadata: { full_name: 'Demo User' }
-    }
+  };
+
+  // Real stats based on actual data
+  const stats = {
+    totalAgents: subscriptions.length,
+    activeConversations: conversations.length,
+    monthlyUsage: conversations.length * 10, // Mock calculation for now
+    subscriptionTier: 'Free' // Default for development
   }
 
-  // Mock data for now - this will be replaced with real data from Supabase
-  const mockStats = {
-    totalAgents: 5,
-    activeConversations: 12,
-    monthlyUsage: 1247,
-    subscriptionTier: 'Pro'
-  }
-
-  const mockAgents = [
-    {
-      id: '1',
-      name: 'Customer Support AI',
-      description: '24/7 intelligent customer service automation',
-      category: 'Customer Service',
-      status: 'active',
-      lastUsed: '2 hours ago'
-    },
-    {
-      id: '2',
-      name: 'Content Generator',
-      description: 'AI-powered content creation and optimization',
-      category: 'Marketing',
-      status: 'active',
-      lastUsed: '1 day ago'
-    },
-    {
-      id: '3',
-      name: 'Data Analyst',
-      description: 'Automated data analysis and insights generation',
-      category: 'Analytics',
-      status: 'inactive',
-      lastUsed: '3 days ago'
-    }
-  ]
+  // Get recent conversations for activity section
+  const recentActivity = conversations.slice(0, 3).map(conv => ({
+    agent: conv.agents.name,
+    action: `Active conversation: ${conv.title}`,
+    time: new Date(conv.updated_at).toLocaleDateString()
+  }));
 
   return (
     <div className="space-y-8">
@@ -108,9 +136,9 @@ export default async function DashboardPage() {
               <Bot className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.totalAgents}</div>
+              <div className="text-2xl font-bold">{stats.totalAgents}</div>
               <p className="text-xs text-muted-foreground">
-                2 added this month
+                {stats.totalAgents === 0 ? 'No subscriptions yet' : 'Active subscriptions'}
               </p>
             </CardContent>
           </Card>
@@ -123,9 +151,9 @@ export default async function DashboardPage() {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.activeConversations}</div>
+              <div className="text-2xl font-bold">{stats.activeConversations}</div>
               <p className="text-xs text-muted-foreground">
-                +3 from yesterday
+                {stats.activeConversations === 0 ? 'Start chatting with agents' : 'Active chats'}
               </p>
             </CardContent>
           </Card>
@@ -138,9 +166,9 @@ export default async function DashboardPage() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.monthlyUsage.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{stats.monthlyUsage.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
-                API calls this month
+                Estimated API calls
               </p>
             </CardContent>
           </Card>
@@ -154,10 +182,10 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                <Badge variant="default">{mockStats.subscriptionTier}</Badge>
+                <Badge variant="default">{stats.subscriptionTier}</Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                Renews in 15 days
+                Development mode
               </p>
             </CardContent>
           </Card>
@@ -166,7 +194,7 @@ export default async function DashboardPage() {
       {/* Your Agents */}
       <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold tracking-tight">Your Agents</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Your Subscribed Agents</h2>
             <Button variant="outline" asChild>
               <Link href="/dashboard/agents">
                 View All
@@ -174,34 +202,60 @@ export default async function DashboardPage() {
             </Button>
           </div>
           
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {mockAgents.map((agent) => (
-              <Card key={agent.id} className="transition-all hover:shadow-md">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline">{agent.category}</Badge>
-                    <Badge 
-                      variant={agent.status === 'active' ? 'default' : 'secondary'}
-                    >
-                      {agent.status}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-lg">{agent.name}</CardTitle>
-                  <CardDescription>{agent.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Last used: {agent.lastUsed}
-                    </span>
-                    <Button size="sm" variant="outline">
-                      Open Chat
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+          ) : subscriptions.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {subscriptions.slice(0, 3).map((subscription) => (
+                <Card key={subscription.id} className="transition-all hover:shadow-md">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline">{subscription.agents.category}</Badge>
+                      <Badge variant="default">
+                        {subscription.status}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-lg">{subscription.agents.name}</CardTitle>
+                    <CardDescription>{subscription.agents.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Subscribed: {new Date(subscription.created_at).toLocaleDateString()}
+                      </span>
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href={`/agents/${subscription.agent_id}`}>
+                          Open Chat
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="text-center py-12">
+              <CardContent className="space-y-4">
+                <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <ShoppingCart className="h-8 w-8 text-primary" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">No Agent Subscriptions Yet</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Browse our marketplace to discover and subscribe to AI agents that can transform your business operations.
+                  </p>
+                </div>
+                <Button asChild>
+                  <Link href="/marketplace">
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Browse Marketplace
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
       {/* Recent Activity */}
@@ -213,36 +267,27 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  agent: 'Customer Support AI',
-                  action: 'Handled customer inquiry about billing',
-                  time: '2 hours ago'
-                },
-                {
-                  agent: 'Content Generator',
-                  action: 'Generated blog post draft',
-                  time: '1 day ago'
-                },
-                {
-                  agent: 'Data Analyst',
-                  action: 'Analyzed sales performance metrics',
-                  time: '3 days ago'
-                }
-              ].map((activity, index) => (
-                <div key={index} className="flex items-center space-x-4 rounded-lg border p-4">
-                  <Bot className="h-8 w-8 text-muted-foreground" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">{activity.agent}</p>
-                    <p className="text-sm text-muted-foreground">{activity.action}</p>
+            {recentActivity.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-center space-x-4 rounded-lg border p-4">
+                    <Bot className="h-8 w-8 text-muted-foreground" />
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium">{activity.agent}</p>
+                      <p className="text-sm text-muted-foreground">{activity.action}</p>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {activity.time}
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {activity.time}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageSquare className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                <p>No recent activity. Start chatting with your subscribed agents to see activity here.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
     </div>

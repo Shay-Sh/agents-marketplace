@@ -76,9 +76,9 @@ export async function POST(
       );
     }
 
-    // For now, we'll use a default user ID
+    // For now, we'll use a default user ID (valid UUID format)
     // In production, this would come from authentication
-    const userId = 'default-user-id';
+    const userId = '00000000-0000-0000-0000-000000000000';
 
     // Verify user has active subscription to this agent
     const { data: subscription } = await supabase
