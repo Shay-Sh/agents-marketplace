@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Bot, Zap, Shield, Users, TrendingUp, Star } from "lucide-react";
+import { ArrowRight, Bot, Zap, Shield, TrendingUp } from "lucide-react";
+import { FeaturedAgents } from "@/components/featured-agents";
 
 export default function Home() {
   return (
@@ -122,56 +123,7 @@ export default function Home() {
               </p>
             </div>
             
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                {
-                  name: "Customer Support AI",
-                  description: "24/7 intelligent customer service automation",
-                  category: "Customer Service",
-                  rating: 4.9,
-                  users: "10k+"
-                },
-                {
-                  name: "Content Generator",
-                  description: "AI-powered content creation and optimization",
-                  category: "Marketing",
-                  rating: 4.8,
-                  users: "5k+"
-                },
-                {
-                  name: "Data Analyst",
-                  description: "Automated data analysis and insights generation",
-                  category: "Analytics",
-                  rating: 4.9,
-                  users: "3k+"
-                }
-              ].map((agent, index) => (
-                <Card key={index} className="transition-all hover:shadow-lg">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline">{agent.category}</Badge>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{agent.rating}</span>
-                      </div>
-                    </div>
-                    <CardTitle>{agent.name}</CardTitle>
-                    <CardDescription>{agent.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Users className="h-4 w-4" />
-                        {agent.users} users
-                      </div>
-                      <Button size="sm" variant="outline">
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <FeaturedAgents />
             
             <Button size="lg" variant="outline" asChild>
               <Link href="/marketplace">

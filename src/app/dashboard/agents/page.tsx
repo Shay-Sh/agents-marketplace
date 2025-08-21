@@ -1,74 +1,53 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { 
-  Bot, 
-  Search, 
-  Filter,
-  Plus,
-  MoreHorizontal,
-  Play,
-  Pause,
-  Settings,
-  Trash2
-} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Bot, Loader2, ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
+interface Agent {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  pricing_tier: string;
+  is_active: boolean;
+  created_at: string;
+}
 
 export default function AgentsPage() {
-  // Mock data - replace with real data from Supabase
-  const agents = [
-    {
-      id: '1',
-      name: 'Customer Support AI',
-      description: '24/7 intelligent customer service automation with natural language understanding',
-      category: 'Customer Service',
-      status: 'active',
-      lastUsed: '2 hours ago',
-      conversations: 142,
-      rating: 4.9,
-      created: '2024-01-15'
-    },
-    {
-      id: '2',
-      name: 'Content Generator',
-      description: 'AI-powered content creation and optimization for marketing and social media',
-      category: 'Marketing',
-      status: 'active',
-      lastUsed: '1 day ago',
-      conversations: 89,
-      rating: 4.7,
-      created: '2024-01-10'
-    },
-    {
-      id: '3',
-      name: 'Data Analyst',
-      description: 'Automated data analysis and insights generation with visualization capabilities',
-      category: 'Analytics',
-      status: 'paused',
-      lastUsed: '3 days ago',
-      conversations: 23,
-      rating: 4.8,
-      created: '2024-01-05'
-    },
-    {
-      id: '4',
-      name: 'Code Reviewer',
-      description: 'AI-powered code review and optimization suggestions for development teams',
-      category: 'Development',
-      status: 'active',
-      lastUsed: '5 hours ago',
-      conversations: 67,
-      rating: 4.6,
-      created: '2024-01-20'
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm] = useState('');
+
+  useEffect(() => {
+    fetchAgents();
+  }, []);
+
+  const fetchAgents = async () => {
+    try {
+      const response = await fetch('/api/admin/agents');
+      if (response.ok) {
+        const data = await response.json();
+        // For now, show all active agents (subscription system will filter this later)
+        setAgents((data.agents || []).filter((agent: Agent) => agent.is_active));
+      }
+    } catch (error) {
+      console.error('Error fetching agents:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const filteredAgents = agents.filter(agent =>
+    agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agent.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agent.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Note: This will show subscribed agents once subscription system is implemented
+  const hasSubscriptions = false; // Will be true when user has subscribed agents
 
   return (
     <div className="space-y-6">
@@ -77,156 +56,66 @@ export default function AgentsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Agents</h1>
           <p className="text-muted-foreground">
-            Manage and monitor your AI agents
+            {hasSubscriptions ? 'Manage and monitor your subscribed AI agents' : 'Subscribe to agents to start using them'}
           </p>
         </div>
         <Button asChild>
-          <Link href="/dashboard/agents/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Agent
+          <Link href="/marketplace">
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            Browse Marketplace
           </Link>
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="relative max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Search agents..."
-            className="pl-10"
-          />
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm">
-            Sort by: Recent
-          </Button>
-        </div>
-      </div>
+      {/* Subscription Status Message */}
+      {!hasSubscriptions && (
+        <Card className="text-center py-12">
+          <CardContent className="space-y-6">
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+              <ShoppingCart className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold">No Agent Subscriptions Yet</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Browse our marketplace to discover and subscribe to AI agents that can transform your business operations.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild>
+                <Link href="/marketplace">
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Browse Marketplace
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/pricing">
+                  View Pricing Plans
+                </Link>
+              </Button>
+            </div>
+            <div className="pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                <strong>Coming Soon:</strong> Subscription system will allow you to subscribe to agents and manage them here.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Agents Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {agents.map((agent) => (
-          <Card key={agent.id} className="transition-all hover:shadow-lg">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Bot className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <Badge variant="outline" className="text-xs">
-                      {agent.category}
-                    </Badge>
-                  </div>
-                </div>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Configure
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      {agent.status === 'active' ? (
-                        <>
-                          <Pause className="mr-2 h-4 w-4" />
-                          Pause
-                        </>
-                      ) : (
-                        <>
-                          <Play className="mr-2 h-4 w-4" />
-                          Activate
-                        </>
-                      )}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              
-              <div>
-                <CardTitle className="text-lg">{agent.name}</CardTitle>
-                <CardDescription className="text-sm line-clamp-2">
-                  {agent.description}
-                </CardDescription>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              {/* Status and Stats */}
-              <div className="flex items-center justify-between">
-                <Badge 
-                  variant={agent.status === 'active' ? 'default' : 'secondary'}
-                  className="text-xs"
-                >
-                  {agent.status}
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  ⭐ {agent.rating}
-                </span>
-              </div>
-              
-              {/* Stats Row */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Conversations</span>
-                  <div className="font-semibold">{agent.conversations}</div>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Last used</span>
-                  <div className="font-semibold">{agent.lastUsed}</div>
-                </div>
-              </div>
-              
-              {/* Actions */}
-              <div className="flex gap-2">
-                <Button size="sm" className="flex-1" asChild>
-                  <Link href={`/dashboard/conversations?agent=${agent.id}`}>
-                    Open Chat
-                  </Link>
-                </Button>
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={`/dashboard/agents/${agent.id}`}>
-                    View Details
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Future: This will show subscribed agents */}
+      {hasSubscriptions && loading && (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+      )}
 
-      {/* Empty State or Load More */}
-      {agents.length === 0 && (
+      {hasSubscriptions && !loading && filteredAgents.length === 0 && (
         <div className="text-center py-12">
           <Bot className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">No agents</h3>
+          <h3 className="mt-2 text-sm font-semibold">No subscribed agents found</h3>
           <p className="mt-1 text-sm text-gray-500">
-            Get started by creating your first AI agent.
+            Try adjusting your search or subscribe to more agents.
           </p>
-          <div className="mt-6">
-            <Button asChild>
-              <Link href="/dashboard/agents/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Agent
-              </Link>
-            </Button>
-          </div>
         </div>
       )}
     </div>

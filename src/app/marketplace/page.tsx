@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bot, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 interface Agent {
   id: string;
@@ -89,8 +90,10 @@ export default function MarketplacePage() {
                     <div className="text-sm text-muted-foreground">
                       Created {new Date(agent.created_at).toLocaleDateString()}
                     </div>
-                    <Button size="sm">
-                      Subscribe
+                    <Button size="sm" asChild>
+                      <Link href={`/agents/${agent.id}`}>
+                        View Details
+                      </Link>
                     </Button>
                   </div>
                 </CardContent>
