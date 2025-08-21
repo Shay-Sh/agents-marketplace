@@ -38,7 +38,9 @@ export const addSubscription = (subscription: Subscription): void => {
   if (!global.subscriptionsStore) {
     global.subscriptionsStore = [];
   }
+  console.log('[STORE] Adding subscription:', subscription.id, 'for agent:', subscription.agent_id);
   global.subscriptionsStore.push(subscription);
+  console.log('[STORE] Total subscriptions:', global.subscriptionsStore.length);
 };
 
 export const findSubscription = (userId: string, agentId: string): Subscription | undefined => {
@@ -48,7 +50,9 @@ export const findSubscription = (userId: string, agentId: string): Subscription 
 
 export const getUserSubscriptions = (userId: string): Subscription[] => {
   const store = getSubscriptionsStore();
-  return store.filter(sub => sub.user_id === userId && sub.status === 'active');
+  const userSubs = store.filter(sub => sub.user_id === userId && sub.status === 'active');
+  console.log('[STORE] Getting user subscriptions for:', userId, 'found:', userSubs.length);
+  return userSubs;
 };
 
 // Conversations store
@@ -93,4 +97,49 @@ export const findConversation = (conversationId: string): Conversation | undefin
 export const getUserConversations = (userId: string): Conversation[] => {
   const store = getConversationsStore();
   return store.filter(conv => conv.user_id === userId);
+};
+
+// Messages store
+export interface Message {
+  id: string;
+  conversation_id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?: any;
+  created_at: string;
+}
+
+declare global {
+  var messagesStore: Message[] | undefined;
+}
+
+if (!global.messagesStore) {
+  global.messagesStore = [];
+}
+
+export const getMessagesStore = (): Message[] => {
+  return global.messagesStore || [];
+};
+
+export const addMessage = (message: Message): void => {
+  if (!global.messagesStore) {
+    global.messagesStore = [];
+  }
+  global.messagesStore.push(message);
+};
+
+export const getConversationMessages = (conversationId: string): Message[] => {
+  const store = getMessagesStore();
+  return store.filter(msg => msg.conversation_id === conversationId)
+              .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+};
+
+export const updateConversationTimestamp = (conversationId: string): void => {
+  if (!global.conversationsStore) return;
+  
+  const conversation = global.conversationsStore.find(conv => conv.id === conversationId);
+  if (conversation) {
+    conversation.updated_at = new Date().toISOString();
+  }
 };

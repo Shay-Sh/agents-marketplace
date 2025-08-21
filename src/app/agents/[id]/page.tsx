@@ -33,6 +33,7 @@ export default function AgentDetailPage() {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
   const [showChat, setShowChat] = useState(!!existingConversationId);
   const [conversationId, setConversationId] = useState<string | undefined>(existingConversationId || undefined);
 
@@ -72,13 +73,19 @@ export default function AgentDetailPage() {
       setShowChat(true);
       setConversationId(existingConversationId);
     }
-    // Auto-trigger subscription if coming from marketplace
-    if (action === 'subscribe' && agent && !isSubscribed) {
+  }, [agentId, existingConversationId]);
+
+  // Separate effect for auto-subscription to prevent loops
+  useEffect(() => {
+    if (action === 'subscribe' && agent && !isSubscribed && !isSubscribing) {
       handleSubscribe();
     }
-  }, [agentId, existingConversationId, action, agent, isSubscribed]);
+  }, [action, agent?.id]); // Only depend on agent.id, not the full agent object or isSubscribed
 
   const handleSubscribe = async () => {
+    if (isSubscribing) return; // Prevent multiple simultaneous subscription attempts
+    
+    setIsSubscribing(true);
     try {
       const response = await fetch('/api/subscriptions', {
         method: 'POST',
@@ -104,6 +111,8 @@ export default function AgentDetailPage() {
       }
     } catch (error) {
       console.error('Error subscribing to agent:', error);
+    } finally {
+      setIsSubscribing(false);
     }
   };
 
@@ -185,9 +194,9 @@ export default function AgentDetailPage() {
                   
                   <div className="flex flex-col gap-2">
                     {!isSubscribed ? (
-                      <Button onClick={handleSubscribe}>
+                      <Button onClick={handleSubscribe} disabled={isSubscribing}>
                         <Star className="mr-2 h-4 w-4" />
-                        Subscribe
+                        {isSubscribing ? 'Subscribing...' : 'Subscribe'}
                       </Button>
                     ) : !showChat ? (
                       <Button onClick={handleStartChat}>
@@ -289,8 +298,8 @@ export default function AgentDetailPage() {
             <p className="text-muted-foreground mb-4">
               Subscribe to this agent to start chatting and unlock all capabilities.
             </p>
-            <Button onClick={handleSubscribe} size="lg">
-              Subscribe Now
+            <Button onClick={handleSubscribe} size="lg" disabled={isSubscribing}>
+              {isSubscribing ? 'Subscribing...' : 'Subscribe Now'}
             </Button>
           </CardContent>
         </Card>
